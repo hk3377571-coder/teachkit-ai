@@ -47,9 +47,14 @@ function Login() {
         <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>{loading ? "Signing in…" : "Log in"}</Button>
-      <p className="text-sm text-muted-foreground text-center">
-        No account? <Link to="/signup" className="text-foreground underline underline-offset-2">Sign up</Link>
-      </p>
+      <div className="text-sm text-muted-foreground text-center space-y-2">
+        <p>
+          <Link to="/forgot-password" className="text-foreground underline underline-offset-2">Forgot password?</Link>
+        </p>
+        <p>
+          No account? <Link to="/signup" className="text-foreground underline underline-offset-2">Sign up</Link>
+        </p>
+      </div>
     </form>
   </AuthLayout>;
 }
