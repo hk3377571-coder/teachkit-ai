@@ -76,11 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AI Teaching Studio — Generate Complete Lesson Kits in Seconds" },
       { name: "description", content: "AI-powered lesson planning for teachers, tutors, and trainers. Generate plans, worksheets, quizzes and answer keys instantly." },
-      { property: "og:title", content: "AI Teaching Studio" },
-      { property: "og:description", content: "AI-powered lesson planning for teachers, tutors, and trainers." },
+      { property: "og:title", content: "AI Teaching Studio — Generate Complete Lesson Kits in Seconds" },
+      { property: "og:description", content: "AI-powered lesson planning for teachers, tutors, and trainers. Generate plans, worksheets, quizzes and answer keys instantly." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "AI Teaching Studio — Generate Complete Lesson Kits in Seconds" },
+      { name: "twitter:description", content: "AI-powered lesson planning for teachers, tutors, and trainers. Generate plans, worksheets, quizzes and answer keys instantly." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1e615903-61c3-4af6-a5bc-1972cbacedcb/id-preview-e3ecd798--f4e9658c-4d41-4ddd-853f-2efd25ee2606.lovable.app-1779034052012.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1e615903-61c3-4af6-a5bc-1972cbacedcb/id-preview-e3ecd798--f4e9658c-4d41-4ddd-853f-2efd25ee2606.lovable.app-1779034052012.png" },
     ],
     links: [
       {
