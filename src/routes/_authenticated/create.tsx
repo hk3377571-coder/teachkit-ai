@@ -38,6 +38,8 @@ function Create() {
   });
   const [subjectChoice, setSubjectChoice] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -48,8 +50,23 @@ function Create() {
     if (!user) return;
     setLoading(true);
 
+    let pdfUrl: string | null = null;
+    if (pdfFile) {
+      setUploading(true);
+      const path = `${user.id}/${Date.now()}-${pdfFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const { error: upErr } = await supabase.storage
+        .from("lesson-pdfs")
+        .upload(path, pdfFile, { contentType: "application/pdf", upsert: false });
+      setUploading(false);
+      if (upErr) {
+        setLoading(false);
+        return toast.error(`PDF upload failed: ${upErr.message}`);
+      }
+      pdfUrl = supabase.storage.from("lesson-pdfs").getPublicUrl(path).data.publicUrl;
+    }
+
     const { data: lesson, error } = await supabase.from("lessons").insert({
-      user_id: user.id, ...parsed.data, status: "generating",
+      user_id: user.id, ...parsed.data, status: "generating", pdf_url: pdfUrl,
     }).select().single();
     if (error || !lesson) { setLoading(false); return toast.error(error?.message ?? "Failed"); }
 
@@ -66,7 +83,7 @@ function Create() {
       const res = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, lesson_id: lesson.id }),
+        body: JSON.stringify({ ...parsed.data, lesson_id: lesson.id, pdf_url: pdfUrl }),
       });
       if (!res.ok) throw new Error(`Webhook ${res.status}`);
       const text = await res.text();
