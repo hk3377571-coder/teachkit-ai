@@ -52,6 +52,7 @@ export type Database = {
           id: string
           language: string
           objectives: string | null
+          pdf_url: string | null
           status: string
           subject: string
           topic: string
@@ -66,6 +67,7 @@ export type Database = {
           id?: string
           language?: string
           objectives?: string | null
+          pdf_url?: string | null
           status?: string
           subject: string
           topic: string
@@ -80,6 +82,7 @@ export type Database = {
           id?: string
           language?: string
           objectives?: string | null
+          pdf_url?: string | null
           status?: string
           subject?: string
           topic?: string
