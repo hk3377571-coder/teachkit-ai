@@ -168,8 +168,29 @@ function Create() {
           <Textarea rows={4} value={form.objectives} onChange={(e) => set("objectives", e.target.value)} placeholder="What should students be able to do at the end?" />
         </Field>
 
+        <Field label="Subject PDF (optional)">
+          <Input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f && f.size > 20 * 1024 * 1024) {
+                toast.error("PDF must be under 20MB");
+                e.target.value = "";
+                return;
+              }
+              setPdfFile(f);
+            }}
+          />
+          {pdfFile && (
+            <p className="text-xs text-muted-foreground">
+              {pdfFile.name} ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB)
+            </p>
+          )}
+        </Field>
+
         <Button type="submit" disabled={loading} className="w-full" size="lg">
-          {loading ? "Generating…" : <><Sparkles className="h-4 w-4 mr-1" /> Generate Lesson Kit</>}
+          {uploading ? "Uploading PDF…" : loading ? "Generating…" : <><Sparkles className="h-4 w-4 mr-1" /> Generate Lesson Kit</>}
         </Button>
       </form>
     </div>
