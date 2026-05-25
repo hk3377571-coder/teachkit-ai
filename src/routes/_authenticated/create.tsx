@@ -16,7 +16,8 @@ import { getWebhookUrl } from "@/lib/webhook";
 export const Route = createFileRoute("/_authenticated/create")({ component: Create });
 
 const SUBJECTS = ["Mathematics", "Science", "English", "History", "Geography", "Computer Science", "Physics", "Chemistry", "Biology", "Social Studies"];
-const GRADES = ["Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6","Grade 7","Grade 8","Grade 9","Grade 10","Grade 11","Grade 12"];
+const SUBJECT_OPTIONS = [...SUBJECTS, "Custom"];
+const SEMESTERS = ["Semester 1","Semester 2","Semester 3","Semester 4","Semester 5","Semester 6","Semester 7","Semester 8"];
 
 const schema = z.object({
   subject: z.string().min(1),
@@ -35,6 +36,7 @@ function Create() {
     subject: "", grade: "", topic: "", duration: "45 min" as const,
     objectives: "", language: "English" as const, difficulty: "Beginner" as const,
   });
+  const [subjectChoice, setSubjectChoice] = useState("");
   const [loading, setLoading] = useState(false);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((p) => ({ ...p, [k]: v }));
@@ -93,15 +95,29 @@ function Create() {
       <form onSubmit={onSubmit} className="max-w-2xl mx-auto p-8 space-y-6">
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Subject">
-            <Select value={form.subject} onValueChange={(v) => set("subject", v)}>
+            <Select
+              value={subjectChoice}
+              onValueChange={(v) => {
+                setSubjectChoice(v);
+                set("subject", v === "Custom" ? "" : v);
+              }}
+            >
               <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
-              <SelectContent>{SUBJECTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              <SelectContent>{SUBJECT_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
             </Select>
+            {subjectChoice === "Custom" && (
+              <Input
+                className="mt-2"
+                value={form.subject}
+                onChange={(e) => set("subject", e.target.value)}
+                placeholder="Enter your custom study"
+              />
+            )}
           </Field>
-          <Field label="Grade / Class">
+          <Field label="Semester">
             <Select value={form.grade} onValueChange={(v) => set("grade", v)}>
-              <SelectTrigger><SelectValue placeholder="Select grade" /></SelectTrigger>
-              <SelectContent>{GRADES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              <SelectTrigger><SelectValue placeholder="Select semester" /></SelectTrigger>
+              <SelectContent>{SEMESTERS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
         </div>
