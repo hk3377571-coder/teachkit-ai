@@ -36,7 +36,7 @@ const schema = z.object({
   lesson_style: z.string().min(1),
 });
 
-function Create() {
+export function LessonKitForm() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -235,6 +235,10 @@ function Create() {
       </form>
     </div>
   );
+}
+
+function Create() {
+  return <LessonKitForm />;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
