@@ -18,6 +18,10 @@ export const Route = createFileRoute("/_authenticated/create")({ component: Crea
 const SUBJECTS = ["Mathematics", "Science", "English", "History", "Geography", "Computer Science", "Physics", "Chemistry", "Biology", "Social Studies"];
 const SUBJECT_OPTIONS = [...SUBJECTS, "Custom"];
 const SEMESTERS = ["Semester 1","Semester 2","Semester 3","Semester 4","Semester 5","Semester 6","Semester 7","Semester 8"];
+const BOARDS = ["CBSE", "ICSE", "State Board", "IB", "Cambridge", "Other"];
+const LESSON_STYLES = ["Lecture", "Interactive", "Activity-based", "Discussion", "Project-based", "Flipped Classroom"];
+
+const WEBHOOK_URL = "https://hook.us2.make.com/pr59tqaxqfc9fjje7oftoxfz8nlopxm6";
 
 const schema = z.object({
   subject: z.string().min(1),
@@ -27,6 +31,9 @@ const schema = z.object({
   objectives: z.string().trim().max(2000).optional().default(""),
   language: z.enum(["English", "Hindi"]),
   difficulty: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  board: z.string().min(1),
+  num_questions: z.number().int().min(1).max(100),
+  lesson_style: z.string().min(1),
 });
 
 function Create() {
@@ -35,11 +42,13 @@ function Create() {
   const [form, setForm] = useState({
     subject: "", grade: "", topic: "", duration: "45 min" as const,
     objectives: "", language: "English" as const, difficulty: "Beginner" as const,
+    board: "", num_questions: 10, lesson_style: "",
   });
   const [subjectChoice, setSubjectChoice] = useState("");
   const [loading, setLoading] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [response, setResponse] = useState<string | null>(null);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -49,6 +58,7 @@ function Create() {
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     if (!user) return;
     setLoading(true);
+    setResponse(null);
 
     let pdfUrl: string | null = null;
     if (pdfFile) {
@@ -66,27 +76,28 @@ function Create() {
     }
 
     const { data: lesson, error } = await supabase.from("lessons").insert({
-      user_id: user.id, ...parsed.data, status: "generating", pdf_url: pdfUrl,
+      user_id: user.id,
+      subject: parsed.data.subject,
+      grade: parsed.data.grade,
+      topic: parsed.data.topic,
+      duration: parsed.data.duration,
+      objectives: parsed.data.objectives,
+      language: parsed.data.language,
+      difficulty: parsed.data.difficulty,
+      status: "generating",
+      pdf_url: pdfUrl,
     }).select().single();
     if (error || !lesson) { setLoading(false); return toast.error(error?.message ?? "Failed"); }
 
-    const webhookUrl = getWebhookUrl();
-    if (!webhookUrl) {
-      await supabase.from("lessons").update({ status: "draft" }).eq("id", lesson.id);
-      toast.warning("Lesson saved. Set your Make.com webhook in Settings to auto-generate content.");
-      setLoading(false);
-      navigate({ to: "/lessons/$id", params: { id: lesson.id } });
-      return;
-    }
-
     try {
-      const res = await fetch(webhookUrl, {
+      const res = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...parsed.data, lesson_id: lesson.id, pdf_url: pdfUrl }),
       });
       if (!res.ok) throw new Error(`Webhook ${res.status}`);
       const text = await res.text();
+      setResponse(text);
       let json: any = null;
       try { json = text ? JSON.parse(text) : null; } catch { json = null; }
       if (json) {
@@ -96,11 +107,9 @@ function Create() {
         await supabase.from("lessons").update({ status: "ready" }).eq("id", lesson.id);
       }
       toast.success("Lesson generated");
-      navigate({ to: "/lessons/$id", params: { id: lesson.id } });
     } catch (err: any) {
       await supabase.from("lessons").update({ status: "error" }).eq("id", lesson.id);
       toast.error(`Generation failed: ${err.message}`);
-      navigate({ to: "/lessons/$id", params: { id: lesson.id } });
     } finally {
       setLoading(false);
     }
@@ -164,6 +173,30 @@ function Create() {
           </Field>
         </div>
 
+        <div className="grid sm:grid-cols-3 gap-4">
+          <Field label="Board">
+            <Select value={form.board} onValueChange={(v) => set("board", v)}>
+              <SelectTrigger><SelectValue placeholder="Select board" /></SelectTrigger>
+              <SelectContent>{BOARDS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            </Select>
+          </Field>
+          <Field label="Number of Questions">
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={form.num_questions}
+              onChange={(e) => set("num_questions", parseInt(e.target.value || "0", 10))}
+            />
+          </Field>
+          <Field label="Lesson Style">
+            <Select value={form.lesson_style} onValueChange={(v) => set("lesson_style", v)}>
+              <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
+              <SelectContent>{LESSON_STYLES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            </Select>
+          </Field>
+        </div>
+
         <Field label="Learning Objectives">
           <Textarea rows={4} value={form.objectives} onChange={(e) => set("objectives", e.target.value)} placeholder="What should students be able to do at the end?" />
         </Field>
@@ -192,6 +225,13 @@ function Create() {
         <Button type="submit" disabled={loading} className="w-full" size="lg">
           {uploading ? "Uploading PDF…" : loading ? "Generating…" : <><Sparkles className="h-4 w-4 mr-1" /> Generate Lesson Kit</>}
         </Button>
+
+        {response && (
+          <div className="space-y-2">
+            <Label>Response</Label>
+            <pre className="rounded-md border bg-muted p-4 text-xs overflow-auto max-h-96 whitespace-pre-wrap">{response}</pre>
+          </div>
+        )}
       </form>
     </div>
   );
