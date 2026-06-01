@@ -81,13 +81,16 @@ export function LessonKitForm() {
       pdfUrl = supabase.storage.from("lesson-pdfs").getPublicUrl(path).data.publicUrl;
     }
 
+    const safeTopic = sanitizeText(parsed.data.topic);
+    const safeObjectives = sanitizeText(parsed.data.objectives);
+
     const { data: lesson, error } = await supabase.from("lessons").insert({
       user_id: user.id,
       subject: parsed.data.subject,
       grade: parsed.data.grade,
-      topic: parsed.data.topic,
+      topic: safeTopic,
       duration: parsed.data.duration,
-      objectives: parsed.data.objectives,
+      objectives: safeObjectives,
       language: parsed.data.language,
       difficulty: parsed.data.difficulty,
       status: "generating",
@@ -99,7 +102,7 @@ export function LessonKitForm() {
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, lesson_id: lesson.id, pdf_url: pdfUrl }),
+        body: JSON.stringify({ ...parsed.data, topic: safeTopic, objectives: safeObjectives, lesson_id: lesson.id, pdf_url: pdfUrl }),
       });
       if (!res.ok) throw new Error(`Webhook ${res.status}`);
       const text = await res.text();
