@@ -50,6 +50,12 @@ export function LessonKitForm() {
   const [uploading, setUploading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
 
+  const sanitizeText = (text: string) =>
+    text
+      .replace(/```/g, "")
+      .replace(/[#"{}]/g, "")
+      .replace(/[^a-zA-Z0-9\s.,!?';:()\-/]/g, "");
+
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((p) => ({ ...p, [k]: v }));
 
   const onSubmit = async (e: React.FormEvent) => {
