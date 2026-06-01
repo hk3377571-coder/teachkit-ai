@@ -99,10 +99,11 @@ export function LessonKitForm() {
     if (error || !lesson) { setLoading(false); return toast.error(error?.message ?? "Failed"); }
 
     try {
+      const promptText = `Subject: ${parsed.data.subject} Grade: ${parsed.data.grade} Topic: ${safeTopic} Duration: ${parsed.data.duration} Objectives: ${safeObjectives} Language: ${parsed.data.language} Difficulty: ${parsed.data.difficulty} Board: ${parsed.data.board} Questions: ${parsed.data.num_questions} Style: ${parsed.data.lesson_style}`.replace(/\n/g, " ");
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, topic: safeTopic, objectives: safeObjectives, lesson_id: lesson.id, pdf_url: pdfUrl }),
+        body: JSON.stringify({ prompt: promptText, lesson_id: lesson.id, pdf_url: pdfUrl }),
       });
       if (!res.ok) throw new Error(`Webhook ${res.status}`);
       const text = await res.text();
