@@ -56,6 +56,8 @@ export function LessonKitForm() {
       .replace(/[#"{}]/g, "")
       .replace(/[^a-zA-Z0-9\s.,!?';:()\-/]/g, "");
 
+  const noNewlines = (text: string) => text.replace(/\n/g, " ");
+
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((p) => ({ ...p, [k]: v }));
 
   const onSubmit = async (e: React.FormEvent) => {
