@@ -15,6 +15,7 @@ interface Content {
   worksheet?: any[];
   quiz?: { mcqs?: any[]; short_questions?: any[] };
   answer_key?: { worksheet_answers?: any[]; quiz_answers?: any[] };
+  rubric?: any;
 }
 
 function LessonViewer() {
@@ -59,6 +60,7 @@ function LessonViewer() {
               <TabsTrigger value="worksheet">Worksheet</TabsTrigger>
               <TabsTrigger value="quiz">Quiz</TabsTrigger>
               <TabsTrigger value="answers">Answer Key</TabsTrigger>
+              <TabsTrigger value="rubric">Rubric</TabsTrigger>
             </TabsList>
 
             <TabsContent value="plan" className="space-y-4">
@@ -112,6 +114,39 @@ function LessonViewer() {
                 <ol className="list-decimal pl-5 space-y-1 text-sm">
                   {(content.answer_key?.quiz_answers ?? []).map((a, i) => <li key={i}>{typeof a === "string" ? a : JSON.stringify(a)}</li>)}
                 </ol>
+              </Section>
+            </TabsContent>
+
+            <TabsContent value="rubric">
+              <Section title="Rubric" onCopy={() => copy(JSON.stringify(content.rubric, null, 2))}>
+                {!content.rubric ? (
+                  <p className="text-muted-foreground text-sm">No rubric.</p>
+                ) : Array.isArray(content.rubric) ? (
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <tbody>
+                        {content.rubric.map((row: any, i: number) => (
+                          <tr key={i} className="border-b border-border">
+                            {Object.entries(row).map(([k, v]) => (
+                              <td key={k} className="p-2 align-top"><span className="font-medium">{k}:</span> {String(v)}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : typeof content.rubric === "object" ? (
+                  <dl className="space-y-2 text-sm">
+                    {Object.entries(content.rubric).map(([k, v]) => (
+                      <div key={k}>
+                        <dt className="font-medium">{k}</dt>
+                        <dd className="text-muted-foreground whitespace-pre-wrap">{typeof v === "string" ? v : JSON.stringify(v, null, 2)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{String(content.rubric)}</p>
+                )}
               </Section>
             </TabsContent>
           </Tabs>
