@@ -1,10 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PageHeader } from "@/components/PageHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Copy } from "lucide-react";
+import { ArrowLeft, Copy, BookOpen, FileText, HelpCircle, CheckCircle2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/lessons/$id")({ component: LessonViewer });
@@ -60,114 +58,152 @@ function LessonViewer() {
   const quizAnswers = ak.quiz ?? ak.quiz_answers ?? {};
 
   return (
-    <div>
-      <PageHeader title={lesson.topic} subtitle={`${lesson.subject} · ${lesson.grade} · ${lesson.duration}`}>
-        <Button variant="outline" size="sm" asChild><Link to="/lessons"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Link></Button>
-      </PageHeader>
+    <div className="min-h-screen bg-background">
+      {/* Hero header */}
+      <div className="border-b border-border bg-gradient-to-br from-primary/10 via-card to-background">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-10">
+          <Button variant="ghost" size="sm" asChild className="mb-6 -ml-3">
+            <Link to="/lessons"><ArrowLeft className="h-4 w-4 mr-1" /> All lessons</Link>
+          </Button>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/15 text-primary">{lesson.subject}</span>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-foreground/70">{lesson.grade}</span>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-foreground/70">{lesson.duration}</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{lesson.topic}</h1>
+          {lp.title && lp.title !== lesson.topic && (
+            <p className="mt-3 text-lg text-muted-foreground">{lp.title}</p>
+          )}
+        </div>
+      </div>
 
-      <div className="p-8 max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-10">
         {!content ? (
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
             <h3 className="font-semibold">No generated content yet</h3>
             <p className="text-sm text-muted-foreground mt-1">Status: {lesson.status}. Once your webhook returns content, it'll appear here.</p>
           </div>
         ) : (
-          <Tabs defaultValue="plan">
-            <TabsList className="mb-6">
-              <TabsTrigger value="plan">Lesson Plan</TabsTrigger>
-              <TabsTrigger value="worksheet">Worksheet</TabsTrigger>
-              <TabsTrigger value="quiz">Quiz</TabsTrigger>
-              <TabsTrigger value="answers">Answer Key</TabsTrigger>
-              <TabsTrigger value="rubric">Rubric</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="plan" className="space-y-4">
-              {lp.title && <h2 className="text-xl font-semibold">{lp.title}</h2>}
+          <div className="space-y-14">
+            {/* Lesson Plan */}
+            <SectionBlock icon={<BookOpen className="h-5 w-5" />} eyebrow="Module 1" title="Lesson Plan">
               {lp.learning_objectives && (
-                <Section title="Learning Objectives">
-                  <ul className="list-disc pl-5 text-sm space-y-1">
+                <SubBlock title="Learning Objectives">
+                  <ul className="list-disc pl-5 space-y-1.5">
                     {lp.learning_objectives.map((o: string, i: number) => <li key={i}>{o}</li>)}
                   </ul>
-                </Section>
+                </SubBlock>
               )}
               {lp.materials && (
-                <Section title="Materials">
-                  <ul className="list-disc pl-5 text-sm space-y-1">
+                <SubBlock title="Materials">
+                  <ul className="list-disc pl-5 space-y-1.5">
                     {lp.materials.map((m: string, i: number) => <li key={i}>{m}</li>)}
                   </ul>
-                </Section>
+                </SubBlock>
               )}
               {lp.procedure && (
-                <Section title="Procedure">
-                  <ol className="space-y-3 text-sm">
+                <SubBlock title="Procedure">
+                  <ol className="space-y-4">
                     {lp.procedure.map((p: any, i: number) => (
-                      <li key={i} className="border-l-2 border-primary/40 pl-3">
-                        <div className="font-medium">Step {p.step ?? i + 1}{p.time ? ` · ${p.time}` : ""}</div>
-                        <p className="text-muted-foreground whitespace-pre-wrap">{p.activity ?? (typeof p === "string" ? p : JSON.stringify(p))}</p>
+                      <li key={i} className="flex gap-4">
+                        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+                          {p.step ?? i + 1}
+                        </div>
+                        <div className="flex-1 pt-1">
+                          {p.time && <div className="text-xs font-medium text-primary mb-1">{p.time}</div>}
+                          <p className="whitespace-pre-wrap leading-relaxed">{p.activity ?? (typeof p === "string" ? p : JSON.stringify(p))}</p>
+                        </div>
                       </li>
                     ))}
                   </ol>
-                </Section>
+                </SubBlock>
               )}
               {lp.differentiation && (
-                <Section title="Differentiation">
-                  <dl className="space-y-2 text-sm">
+                <SubBlock title="Differentiation">
+                  <dl className="space-y-3">
                     {Object.entries(lp.differentiation).map(([k, v]) => (
-                      <div key={k}><dt className="font-medium capitalize">{k}</dt><dd className="text-muted-foreground">{String(v)}</dd></div>
+                      <div key={k} className="border-l-2 border-primary/40 pl-4">
+                        <dt className="font-medium capitalize text-foreground">{k.replace(/_/g, " ")}</dt>
+                        <dd className="text-muted-foreground mt-0.5">{String(v)}</dd>
+                      </div>
                     ))}
                   </dl>
-                </Section>
+                </SubBlock>
               )}
               {lp.assessment && (
-                <Section title="Assessment">
-                  <ul className="list-disc pl-5 text-sm space-y-1">
+                <SubBlock title="Assessment">
+                  <ul className="list-disc pl-5 space-y-1.5">
                     {(Array.isArray(lp.assessment) ? lp.assessment : [lp.assessment]).map((a: string, i: number) => <li key={i}>{a}</li>)}
                   </ul>
-                </Section>
+                </SubBlock>
               )}
-              {/* Legacy fields */}
               {["warm_up","concept_explanation","activity","recap","homework"].map((k) => lp[k] && (
-                <Section key={k} title={k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}>
-                  <p className="whitespace-pre-wrap text-sm">{lp[k]}</p>
-                </Section>
+                <SubBlock key={k} title={k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}>
+                  <p className="whitespace-pre-wrap leading-relaxed">{lp[k]}</p>
+                </SubBlock>
               ))}
-            </TabsContent>
+            </SectionBlock>
 
-            <TabsContent value="worksheet">
-              <Section title={content.worksheet?.title ?? "Worksheet"} onCopy={() => copy(JSON.stringify(content.worksheet, null, 2))}>
-                {content.worksheet?.instructions && <p className="text-sm text-muted-foreground mb-3 italic">{content.worksheet.instructions}</p>}
-                <ol className="list-decimal pl-5 space-y-3 text-sm">
-                  {worksheetQs.map((q: any, i: number) => <li key={i}><QuestionView q={q} /></li>)}
-                  {worksheetQs.length === 0 && <p className="text-muted-foreground">No worksheet items.</p>}
+            {/* Worksheet */}
+            <SectionBlock
+              icon={<FileText className="h-5 w-5" />}
+              eyebrow="Module 2"
+              title={content.worksheet?.title ?? "Worksheet"}
+              onCopy={() => copy(JSON.stringify(content.worksheet, null, 2))}
+            >
+              {content.worksheet?.instructions && (
+                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{content.worksheet.instructions}</p>
+              )}
+              {worksheetQs.length > 0 ? (
+                <ol className="space-y-6">
+                  {worksheetQs.map((q: any, i: number) => (
+                    <li key={i} className="flex gap-4">
+                      <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                      <div className="flex-1"><QuestionView q={q} /></div>
+                    </li>
+                  ))}
                 </ol>
-              </Section>
-            </TabsContent>
+              ) : <p className="text-muted-foreground">No worksheet items.</p>}
+            </SectionBlock>
 
-            <TabsContent value="quiz">
-              <Section title={content.quiz?.title ?? "Quiz"} onCopy={() => copy(JSON.stringify(content.quiz, null, 2))}>
-                {content.quiz?.instructions && <p className="text-sm text-muted-foreground mb-3 italic">{content.quiz.instructions}</p>}
-                <ol className="list-decimal pl-5 space-y-3 text-sm">
-                  {quizQs.map((q: any, i: number) => <li key={i}><QuestionView q={q} /></li>)}
-                  {quizQs.length === 0 && <p className="text-muted-foreground">No quiz items.</p>}
+            {/* Quiz */}
+            <SectionBlock
+              icon={<HelpCircle className="h-5 w-5" />}
+              eyebrow="Module 3"
+              title={content.quiz?.title ?? "Quiz"}
+              onCopy={() => copy(JSON.stringify(content.quiz, null, 2))}
+            >
+              {content.quiz?.instructions && (
+                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{content.quiz.instructions}</p>
+              )}
+              {quizQs.length > 0 ? (
+                <ol className="space-y-6">
+                  {quizQs.map((q: any, i: number) => (
+                    <li key={i} className="flex gap-4">
+                      <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                      <div className="flex-1"><QuestionView q={q} /></div>
+                    </li>
+                  ))}
                 </ol>
-              </Section>
-            </TabsContent>
+              ) : <p className="text-muted-foreground">No quiz items.</p>}
+            </SectionBlock>
 
-            <TabsContent value="answers" className="space-y-4">
-              <Section title="Worksheet Answers">
-                <AnswersView answers={wsAnswers} />
-              </Section>
-              <Section title="Quiz Answers">
-                <AnswersView answers={quizAnswers} />
-              </Section>
-            </TabsContent>
+            {/* Answer Key */}
+            <SectionBlock icon={<CheckCircle2 className="h-5 w-5" />} eyebrow="Module 4" title="Answer Key">
+              <SubBlock title="Worksheet Answers"><AnswersView answers={wsAnswers} /></SubBlock>
+              <SubBlock title="Quiz Answers"><AnswersView answers={quizAnswers} /></SubBlock>
+            </SectionBlock>
 
-            <TabsContent value="rubric">
-              <Section title="Rubric" onCopy={() => copy(JSON.stringify(content.rubric, null, 2))}>
-                <RubricView rubric={content.rubric} />
-              </Section>
-            </TabsContent>
-          </Tabs>
+            {/* Rubric */}
+            <SectionBlock
+              icon={<ClipboardList className="h-5 w-5" />}
+              eyebrow="Module 5"
+              title="Rubric"
+              onCopy={() => copy(JSON.stringify(content.rubric, null, 2))}
+            >
+              <RubricView rubric={content.rubric} />
+            </SectionBlock>
+          </div>
         )}
       </div>
     </div>
@@ -244,14 +280,35 @@ function RubricView({ rubric }: { rubric: any }) {
   return <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(rubric, null, 2)}</pre>;
 }
 
-function Section({ title, children, onCopy }: { title: string; children: React.ReactNode; onCopy?: () => void }) {
+function SectionBlock({ icon, eyebrow, title, children, onCopy }: { icon: React.ReactNode; eyebrow: string; title: string; children: React.ReactNode; onCopy?: () => void }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold">{title}</h3>
-        {onCopy && <Button size="sm" variant="ghost" onClick={onCopy}><Copy className="h-3.5 w-3.5 mr-1" /> Copy</Button>}
+    <section className="scroll-mt-20">
+      <div className="flex items-start justify-between mb-6 pb-4 border-b border-border">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mt-0.5">
+            {icon}
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{eyebrow}</div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">{title}</h2>
+          </div>
+        </div>
+        {onCopy && (
+          <Button size="sm" variant="ghost" onClick={onCopy}>
+            <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+          </Button>
+        )}
       </div>
-      {children}
+      <div className="space-y-8 text-[15px] leading-relaxed text-foreground/90">{children}</div>
+    </section>
+  );
+}
+
+function SubBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">{title}</h3>
+      <div>{children}</div>
     </div>
   );
 }
