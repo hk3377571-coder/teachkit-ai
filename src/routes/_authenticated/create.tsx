@@ -122,7 +122,15 @@ export function LessonKitForm() {
       const text = await res.text();
       setResponse(text);
       let json: any = null;
-      try { json = text ? JSON.parse(text) : null; } catch { json = null; }
+      try {
+        const outer = text ? JSON.parse(text) : null;
+        let inner = outer?.choices?.[0]?.message?.content ?? outer;
+        if (typeof inner === "string") {
+          const stripped = inner.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+          try { inner = JSON.parse(stripped); } catch { /* keep string */ }
+        }
+        json = inner;
+      } catch { json = null; }
       if (json) {
         await supabase.from("lesson_content").insert({ lesson_id: lesson.id, lesson_json: json });
         await supabase.from("lessons").update({ status: "ready" }).eq("id", lesson.id);
