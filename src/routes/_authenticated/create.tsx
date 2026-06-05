@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import { getWebhookUrl } from "@/lib/webhook";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/create")({ component: Create });
 
@@ -49,6 +50,7 @@ export function LessonKitForm() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
+  const [result, setResult] = useState<any | null>(null);
 
   const sanitizeText = (text: string) =>
     text
@@ -67,6 +69,7 @@ export function LessonKitForm() {
     if (!user) return;
     setLoading(true);
     setResponse(null);
+    setResult(null);
 
     let pdfUrl: string | null = null;
     if (pdfFile) {
@@ -134,6 +137,7 @@ export function LessonKitForm() {
       if (json) {
         await supabase.from("lesson_content").insert({ lesson_id: lesson.id, lesson_json: json });
         await supabase.from("lessons").update({ status: "ready" }).eq("id", lesson.id);
+        setResult(json);
       } else {
         await supabase.from("lessons").update({ status: "ready" }).eq("id", lesson.id);
       }
@@ -254,13 +258,28 @@ export function LessonKitForm() {
         </Field>
 
         <Button type="submit" disabled={loading} className="w-full" size="lg">
-          {uploading ? "Uploading PDF…" : loading ? "Generating…" : <><Sparkles className="h-4 w-4 mr-1" /> Generate Lesson Kit</>}
+          {uploading ? (
+            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading PDF…</>
+          ) : loading ? (
+            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generating…</>
+          ) : (
+            <><Sparkles className="h-4 w-4 mr-1" /> Generate Lesson Kit</>
+          )}
         </Button>
 
-        {response && (
-          <div className="space-y-2">
-            <Label>Response</Label>
-            <pre className="rounded-md border bg-muted p-4 text-xs overflow-auto max-h-96 whitespace-pre-wrap">{response}</pre>
+        {loading && (
+          <div className="flex items-center justify-center gap-2 text-muted-foreground py-6">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Generating your lesson kit…</span>
+          </div>
+        )}
+
+        {result && (
+          <div className="grid gap-4 pt-4">
+            <ResultCard title="Lesson Plan" data={result.lesson_plan} />
+            <ResultCard title="Worksheet" data={result.worksheet} />
+            <ResultCard title="Quiz" data={result.quiz} />
+            <ResultCard title="Answer Key" data={result.answer_key} />
           </div>
         )}
       </form>
@@ -274,4 +293,19 @@ function Create() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-2"><Label>{label}</Label>{children}</div>;
+}
+
+function ResultCard({ title, data }: { title: string; data: any }) {
+  if (data == null) return null;
+  const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <pre className="whitespace-pre-wrap text-sm leading-relaxed font-sans">{text}</pre>
+      </CardContent>
+    </Card>
+  );
 }
