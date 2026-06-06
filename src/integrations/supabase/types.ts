@@ -45,49 +45,61 @@ export type Database = {
       }
       lessons: {
         Row: {
+          answer_key: Json | null
           created_at: string
           difficulty: string
           duration: string
           grade: string
           id: string
           language: string
+          lesson_plan: Json | null
           objectives: string | null
           pdf_url: string | null
+          quiz: Json | null
           status: string
           subject: string
           topic: string
           updated_at: string
           user_id: string
+          worksheet: Json | null
         }
         Insert: {
+          answer_key?: Json | null
           created_at?: string
           difficulty?: string
           duration: string
           grade: string
           id?: string
           language?: string
+          lesson_plan?: Json | null
           objectives?: string | null
           pdf_url?: string | null
+          quiz?: Json | null
           status?: string
           subject: string
           topic: string
           updated_at?: string
           user_id: string
+          worksheet?: Json | null
         }
         Update: {
+          answer_key?: Json | null
           created_at?: string
           difficulty?: string
           duration?: string
           grade?: string
           id?: string
           language?: string
+          lesson_plan?: Json | null
           objectives?: string | null
           pdf_url?: string | null
+          quiz?: Json | null
           status?: string
           subject?: string
           topic?: string
           updated_at?: string
           user_id?: string
+          worksheet?: Json | null
         }
         Relationships: []
       }
