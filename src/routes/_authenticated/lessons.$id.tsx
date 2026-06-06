@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Copy, BookOpen, FileText, HelpCircle, CheckCircle2, ClipboardList } from "lucide-react";
+import { ArrowLeft, Copy, BookOpen, FileText, HelpCircle, CheckCircle2, ClipboardList, Printer, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/lessons/$id")({ component: LessonViewer });
@@ -83,8 +83,13 @@ function LessonViewer() {
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{lesson.topic}</h1>
           {lp.title && lp.title !== lesson.topic && (
-            <p className="mt-3 text-lg text-muted-foreground">{lp.title}</p>
-          )}
+  <p className="mt-3 text-lg text-muted-foreground">{lp.title}</p>
+)}
+<div className="flex gap-3 mt-6">
+  <Button size="sm" variant="outline" onClick={() => window.print()}>
+    <Printer className="h-4 w-4 mr-1.5" /> Print
+  </Button>
+</div>
         </div>
       </div>
 
@@ -447,3 +452,4 @@ function SubBlock({ title, children }: { title: string; children: React.ReactNod
     </div>
   );
 }
+
