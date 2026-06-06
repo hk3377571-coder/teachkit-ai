@@ -47,15 +47,26 @@ function LessonViewer() {
   if (!lesson) return <div className="p-8">Lesson not found.</div>;
 
   const lp: any = content?.lesson_plan ?? {};
-  const worksheetQs: any[] = Array.isArray(content?.worksheet)
-    ? content!.worksheet
-    : (content?.worksheet?.questions ?? []);
-  const quizQs: any[] = Array.isArray(content?.quiz)
-    ? content!.quiz
-    : (content?.quiz?.questions ?? content?.quiz?.mcqs ?? []);
+  const ws: any = content?.worksheet ?? {};
+  const quiz: any = content?.quiz ?? {};
   const ak: any = content?.answer_key ?? {};
-  const wsAnswers = ak.worksheet ?? ak.worksheet_answers ?? {};
-  const quizAnswers = ak.quiz ?? ak.quiz_answers ?? {};
+  const tieredWorksheet =
+    ws && typeof ws === "object" && (ws.easy || ws.medium || ws.hard)
+      ? { easy: ws.easy ?? [], medium: ws.medium ?? [], hard: ws.hard ?? [] }
+      : null;
+  const worksheetQs: any[] = !tieredWorksheet
+    ? Array.isArray(ws)
+      ? ws
+      : (ws.questions ?? [])
+    : [];
+  const mcqs: any[] = Array.isArray(quiz?.mcq) ? quiz.mcq : [];
+  const shortAnswers: any[] = Array.isArray(quiz?.short_answer) ? quiz.short_answer : [];
+  const hasTieredQuiz = mcqs.length > 0 || shortAnswers.length > 0;
+  const quizQs: any[] = !hasTieredQuiz
+    ? Array.isArray(quiz)
+      ? quiz
+      : (quiz.questions ?? quiz.mcqs ?? [])
+    : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -148,13 +159,31 @@ function LessonViewer() {
             <SectionBlock
               icon={<FileText className="h-5 w-5" />}
               eyebrow="Module 2"
-              title={content.worksheet?.title ?? "Worksheet"}
+              title={ws?.title ?? "Worksheet"}
               onCopy={() => copy(JSON.stringify(content.worksheet, null, 2))}
             >
-              {content.worksheet?.instructions && (
-                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{content.worksheet.instructions}</p>
+              {ws?.instructions && (
+                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{ws.instructions}</p>
               )}
-              {worksheetQs.length > 0 ? (
+              {tieredWorksheet ? (
+                <div className="space-y-8">
+                  {(["easy", "medium", "hard"] as const).map((tier) =>
+                    tieredWorksheet[tier]?.length > 0 ? (
+                      <div key={tier}>
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-primary mb-3">{tier}</h3>
+                        <ol className="space-y-4">
+                          {tieredWorksheet[tier].map((q: any, i: number) => (
+                            <li key={i} className="flex gap-4">
+                              <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                              <div className="flex-1"><QuestionView q={q} /></div>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    ) : null
+                  )}
+                </div>
+              ) : worksheetQs.length > 0 ? (
                 <ol className="space-y-6">
                   {worksheetQs.map((q: any, i: number) => (
                     <li key={i} className="flex gap-4">
@@ -170,13 +199,42 @@ function LessonViewer() {
             <SectionBlock
               icon={<HelpCircle className="h-5 w-5" />}
               eyebrow="Module 3"
-              title={content.quiz?.title ?? "Quiz"}
+              title={quiz?.title ?? "Quiz"}
               onCopy={() => copy(JSON.stringify(content.quiz, null, 2))}
             >
-              {content.quiz?.instructions && (
-                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{content.quiz.instructions}</p>
+              {quiz?.instructions && (
+                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{quiz.instructions}</p>
               )}
-              {quizQs.length > 0 ? (
+              {hasTieredQuiz ? (
+                <div className="space-y-8">
+                  {mcqs.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary mb-3">Multiple Choice</h3>
+                      <ol className="space-y-6">
+                        {mcqs.map((q: any, i: number) => (
+                          <li key={i} className="flex gap-4">
+                            <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                            <div className="flex-1"><QuestionView q={q} /></div>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  {shortAnswers.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary mb-3">Short Answer</h3>
+                      <ol className="space-y-4">
+                        {shortAnswers.map((q: any, i: number) => (
+                          <li key={i} className="flex gap-4">
+                            <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                            <div className="flex-1"><QuestionView q={q} /></div>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              ) : quizQs.length > 0 ? (
                 <ol className="space-y-6">
                   {quizQs.map((q: any, i: number) => (
                     <li key={i} className="flex gap-4">
@@ -190,8 +248,7 @@ function LessonViewer() {
 
             {/* Answer Key */}
             <SectionBlock icon={<CheckCircle2 className="h-5 w-5" />} eyebrow="Module 4" title="Answer Key">
-              <SubBlock title="Worksheet Answers"><AnswersView answers={wsAnswers} /></SubBlock>
-              <SubBlock title="Quiz Answers"><AnswersView answers={quizAnswers} /></SubBlock>
+              <AnswerKeyView ak={ak} />
             </SectionBlock>
 
             {/* Rubric */}
@@ -250,6 +307,84 @@ function AnswersView({ answers }: { answers: any }) {
         <div key={k} className="flex gap-2">
           <dt className="font-medium min-w-8">{k}.</dt>
           <dd className="text-muted-foreground whitespace-pre-wrap">{typeof v === "string" ? v : JSON.stringify(v)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function AnswerKeyView({ ak }: { ak: any }) {
+  if (!ak || (typeof ak === "object" && Object.keys(ak).length === 0)) {
+    return <p className="text-muted-foreground text-sm">No answer key.</p>;
+  }
+  if (typeof ak === "string") return <p className="whitespace-pre-wrap">{ak}</p>;
+  return (
+    <div className="space-y-8">
+      {Object.entries(ak).map(([section, val]) => (
+        <div key={section}>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            {section.replace(/_/g, " ")}
+          </h3>
+          <AnswerSectionView val={val} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AnswerSectionView({ val }: { val: any }) {
+  if (val == null) return <p className="text-muted-foreground text-sm">—</p>;
+  if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") {
+    return <p className="whitespace-pre-wrap">{String(val)}</p>;
+  }
+  if (Array.isArray(val)) {
+    return (
+      <ol className="list-decimal pl-5 space-y-2">
+        {val.map((item, i) => (
+          <li key={i}><AnswerItemView item={item} /></li>
+        ))}
+      </ol>
+    );
+  }
+  // object: could be tiered (easy/medium/hard) or numbered keys
+  return (
+    <div className="space-y-4">
+      {Object.entries(val).map(([k, v]) => (
+        <div key={k}>
+          <div className="font-medium capitalize text-foreground mb-1">{k.replace(/_/g, " ")}</div>
+          <div className="pl-3 border-l-2 border-primary/30"><AnswerSectionView val={v} /></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AnswerItemView({ item }: { item: any }) {
+  if (item == null) return <span>—</span>;
+  if (typeof item === "string" || typeof item === "number" || typeof item === "boolean") {
+    return <span>{String(item)}</span>;
+  }
+  if (Array.isArray(item)) return <AnswerSectionView val={item} />;
+  const q = item.question ?? item.prompt ?? item.q;
+  const a = item.answer ?? item.correct_answer ?? item.correct ?? item.a;
+  const explanation = item.explanation ?? item.rationale;
+  if (q || a) {
+    return (
+      <div className="space-y-1">
+        {q && <div className="font-medium">{String(q)}</div>}
+        {a !== undefined && (
+          <div><span className="text-primary font-medium">Answer:</span> {typeof a === "object" ? JSON.stringify(a) : String(a)}</div>
+        )}
+        {explanation && <div className="text-muted-foreground text-sm">{String(explanation)}</div>}
+      </div>
+    );
+  }
+  return (
+    <dl className="space-y-1 text-sm">
+      {Object.entries(item).map(([k, v]) => (
+        <div key={k} className="flex gap-2">
+          <dt className="font-medium capitalize min-w-[120px]">{k.replace(/_/g, " ")}:</dt>
+          <dd className="text-muted-foreground">{typeof v === "object" ? JSON.stringify(v) : String(v)}</dd>
         </div>
       ))}
     </dl>
