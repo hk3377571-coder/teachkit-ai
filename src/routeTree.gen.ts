@@ -19,6 +19,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedLessonsRouteImport } from './routes/_authenticated/lessons'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
+import { Route as AuthenticatedLessonsIndexRouteImport } from './routes/_authenticated/lessons.index'
 import { Route as AuthenticatedLessonsIdRouteImport } from './routes/_authenticated/lessons.$id'
 
 const SignupRoute = SignupRouteImport.update({
@@ -70,6 +71,12 @@ const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedLessonsIndexRoute =
+  AuthenticatedLessonsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedLessonsRoute,
+  } as any)
 const AuthenticatedLessonsIdRoute = AuthenticatedLessonsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/lessons': typeof AuthenticatedLessonsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/lessons/$id': typeof AuthenticatedLessonsIdRoute
+  '/lessons/': typeof AuthenticatedLessonsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -96,9 +104,9 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/lessons': typeof AuthenticatedLessonsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/lessons/$id': typeof AuthenticatedLessonsIdRoute
+  '/lessons': typeof AuthenticatedLessonsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/_authenticated/lessons': typeof AuthenticatedLessonsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/lessons/$id': typeof AuthenticatedLessonsIdRoute
+  '/_authenticated/lessons/': typeof AuthenticatedLessonsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/lessons'
     | '/settings'
     | '/lessons/$id'
+    | '/lessons/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -136,9 +146,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/create'
     | '/dashboard'
-    | '/lessons'
     | '/settings'
     | '/lessons/$id'
+    | '/lessons'
   id:
     | '__root__'
     | '/'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lessons'
     | '/_authenticated/settings'
     | '/_authenticated/lessons/$id'
+    | '/_authenticated/lessons/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -235,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/lessons/': {
+      id: '/_authenticated/lessons/'
+      path: '/'
+      fullPath: '/lessons/'
+      preLoaderRoute: typeof AuthenticatedLessonsIndexRouteImport
+      parentRoute: typeof AuthenticatedLessonsRoute
+    }
     '/_authenticated/lessons/$id': {
       id: '/_authenticated/lessons/$id'
       path: '/$id'
@@ -247,10 +265,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedLessonsRouteChildren {
   AuthenticatedLessonsIdRoute: typeof AuthenticatedLessonsIdRoute
+  AuthenticatedLessonsIndexRoute: typeof AuthenticatedLessonsIndexRoute
 }
 
 const AuthenticatedLessonsRouteChildren: AuthenticatedLessonsRouteChildren = {
   AuthenticatedLessonsIdRoute: AuthenticatedLessonsIdRoute,
+  AuthenticatedLessonsIndexRoute: AuthenticatedLessonsIndexRoute,
 }
 
 const AuthenticatedLessonsRouteWithChildren =
