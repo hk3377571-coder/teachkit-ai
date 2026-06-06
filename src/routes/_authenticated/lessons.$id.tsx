@@ -159,13 +159,31 @@ function LessonViewer() {
             <SectionBlock
               icon={<FileText className="h-5 w-5" />}
               eyebrow="Module 2"
-              title={content.worksheet?.title ?? "Worksheet"}
+              title={ws?.title ?? "Worksheet"}
               onCopy={() => copy(JSON.stringify(content.worksheet, null, 2))}
             >
-              {content.worksheet?.instructions && (
-                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{content.worksheet.instructions}</p>
+              {ws?.instructions && (
+                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{ws.instructions}</p>
               )}
-              {worksheetQs.length > 0 ? (
+              {tieredWorksheet ? (
+                <div className="space-y-8">
+                  {(["easy", "medium", "hard"] as const).map((tier) =>
+                    tieredWorksheet[tier]?.length > 0 ? (
+                      <div key={tier}>
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-primary mb-3">{tier}</h3>
+                        <ol className="space-y-4">
+                          {tieredWorksheet[tier].map((q: any, i: number) => (
+                            <li key={i} className="flex gap-4">
+                              <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                              <div className="flex-1"><QuestionView q={q} /></div>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    ) : null
+                  )}
+                </div>
+              ) : worksheetQs.length > 0 ? (
                 <ol className="space-y-6">
                   {worksheetQs.map((q: any, i: number) => (
                     <li key={i} className="flex gap-4">
@@ -181,13 +199,42 @@ function LessonViewer() {
             <SectionBlock
               icon={<HelpCircle className="h-5 w-5" />}
               eyebrow="Module 3"
-              title={content.quiz?.title ?? "Quiz"}
+              title={quiz?.title ?? "Quiz"}
               onCopy={() => copy(JSON.stringify(content.quiz, null, 2))}
             >
-              {content.quiz?.instructions && (
-                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{content.quiz.instructions}</p>
+              {quiz?.instructions && (
+                <p className="text-muted-foreground italic mb-6 pb-4 border-b border-border">{quiz.instructions}</p>
               )}
-              {quizQs.length > 0 ? (
+              {hasTieredQuiz ? (
+                <div className="space-y-8">
+                  {mcqs.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary mb-3">Multiple Choice</h3>
+                      <ol className="space-y-6">
+                        {mcqs.map((q: any, i: number) => (
+                          <li key={i} className="flex gap-4">
+                            <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                            <div className="flex-1"><QuestionView q={q} /></div>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  {shortAnswers.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary mb-3">Short Answer</h3>
+                      <ol className="space-y-4">
+                        {shortAnswers.map((q: any, i: number) => (
+                          <li key={i} className="flex gap-4">
+                            <span className="flex-shrink-0 font-semibold text-primary w-7">{i + 1}.</span>
+                            <div className="flex-1"><QuestionView q={q} /></div>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              ) : quizQs.length > 0 ? (
                 <ol className="space-y-6">
                   {quizQs.map((q: any, i: number) => (
                     <li key={i} className="flex gap-4">
@@ -201,8 +248,7 @@ function LessonViewer() {
 
             {/* Answer Key */}
             <SectionBlock icon={<CheckCircle2 className="h-5 w-5" />} eyebrow="Module 4" title="Answer Key">
-              <SubBlock title="Worksheet Answers"><AnswersView answers={wsAnswers} /></SubBlock>
-              <SubBlock title="Quiz Answers"><AnswersView answers={quizAnswers} /></SubBlock>
+              <AnswerKeyView ak={ak} />
             </SectionBlock>
 
             {/* Rubric */}
