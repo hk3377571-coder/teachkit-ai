@@ -47,15 +47,26 @@ function LessonViewer() {
   if (!lesson) return <div className="p-8">Lesson not found.</div>;
 
   const lp: any = content?.lesson_plan ?? {};
-  const worksheetQs: any[] = Array.isArray(content?.worksheet)
-    ? content!.worksheet
-    : (content?.worksheet?.questions ?? []);
-  const quizQs: any[] = Array.isArray(content?.quiz)
-    ? content!.quiz
-    : (content?.quiz?.questions ?? content?.quiz?.mcqs ?? []);
+  const ws: any = content?.worksheet ?? {};
+  const quiz: any = content?.quiz ?? {};
   const ak: any = content?.answer_key ?? {};
-  const wsAnswers = ak.worksheet ?? ak.worksheet_answers ?? {};
-  const quizAnswers = ak.quiz ?? ak.quiz_answers ?? {};
+  const tieredWorksheet =
+    ws && typeof ws === "object" && (ws.easy || ws.medium || ws.hard)
+      ? { easy: ws.easy ?? [], medium: ws.medium ?? [], hard: ws.hard ?? [] }
+      : null;
+  const worksheetQs: any[] = !tieredWorksheet
+    ? Array.isArray(ws)
+      ? ws
+      : (ws.questions ?? [])
+    : [];
+  const mcqs: any[] = Array.isArray(quiz?.mcq) ? quiz.mcq : [];
+  const shortAnswers: any[] = Array.isArray(quiz?.short_answer) ? quiz.short_answer : [];
+  const hasTieredQuiz = mcqs.length > 0 || shortAnswers.length > 0;
+  const quizQs: any[] = !hasTieredQuiz
+    ? Array.isArray(quiz)
+      ? quiz
+      : (quiz.questions ?? quiz.mcqs ?? [])
+    : [];
 
   return (
     <div className="min-h-screen bg-background">
