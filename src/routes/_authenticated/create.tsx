@@ -139,7 +139,13 @@ export function LessonKitForm() {
       } catch { json = null; }
       if (json) {
         await supabase.from("lesson_content").insert({ lesson_id: lesson.id, lesson_json: json });
-        await supabase.from("lessons").update({ status: "ready" }).eq("id", lesson.id);
+        await supabase.from("lessons").update({
+          status: "ready",
+          lesson_plan: json.lesson_plan ?? null,
+          worksheet: json.worksheet ?? null,
+          quiz: json.quiz ?? null,
+          answer_key: json.answer_key ?? null,
+        }).eq("id", lesson.id);
         setResult(json);
       } else {
         await supabase.from("lessons").update({ status: "ready" }).eq("id", lesson.id);
