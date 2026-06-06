@@ -313,6 +313,84 @@ function AnswersView({ answers }: { answers: any }) {
   );
 }
 
+function AnswerKeyView({ ak }: { ak: any }) {
+  if (!ak || (typeof ak === "object" && Object.keys(ak).length === 0)) {
+    return <p className="text-muted-foreground text-sm">No answer key.</p>;
+  }
+  if (typeof ak === "string") return <p className="whitespace-pre-wrap">{ak}</p>;
+  return (
+    <div className="space-y-8">
+      {Object.entries(ak).map(([section, val]) => (
+        <div key={section}>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            {section.replace(/_/g, " ")}
+          </h3>
+          <AnswerSectionView val={val} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AnswerSectionView({ val }: { val: any }) {
+  if (val == null) return <p className="text-muted-foreground text-sm">—</p>;
+  if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") {
+    return <p className="whitespace-pre-wrap">{String(val)}</p>;
+  }
+  if (Array.isArray(val)) {
+    return (
+      <ol className="list-decimal pl-5 space-y-2">
+        {val.map((item, i) => (
+          <li key={i}><AnswerItemView item={item} /></li>
+        ))}
+      </ol>
+    );
+  }
+  // object: could be tiered (easy/medium/hard) or numbered keys
+  return (
+    <div className="space-y-4">
+      {Object.entries(val).map(([k, v]) => (
+        <div key={k}>
+          <div className="font-medium capitalize text-foreground mb-1">{k.replace(/_/g, " ")}</div>
+          <div className="pl-3 border-l-2 border-primary/30"><AnswerSectionView val={v} /></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AnswerItemView({ item }: { item: any }) {
+  if (item == null) return <span>—</span>;
+  if (typeof item === "string" || typeof item === "number" || typeof item === "boolean") {
+    return <span>{String(item)}</span>;
+  }
+  if (Array.isArray(item)) return <AnswerSectionView val={item} />;
+  const q = item.question ?? item.prompt ?? item.q;
+  const a = item.answer ?? item.correct_answer ?? item.correct ?? item.a;
+  const explanation = item.explanation ?? item.rationale;
+  if (q || a) {
+    return (
+      <div className="space-y-1">
+        {q && <div className="font-medium">{String(q)}</div>}
+        {a !== undefined && (
+          <div><span className="text-primary font-medium">Answer:</span> {typeof a === "object" ? JSON.stringify(a) : String(a)}</div>
+        )}
+        {explanation && <div className="text-muted-foreground text-sm">{String(explanation)}</div>}
+      </div>
+    );
+  }
+  return (
+    <dl className="space-y-1 text-sm">
+      {Object.entries(item).map(([k, v]) => (
+        <div key={k} className="flex gap-2">
+          <dt className="font-medium capitalize min-w-[120px]">{k.replace(/_/g, " ")}:</dt>
+          <dd className="text-muted-foreground">{typeof v === "object" ? JSON.stringify(v) : String(v)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function RubricView({ rubric }: { rubric: any }) {
   if (!rubric) return <p className="text-muted-foreground text-sm">No rubric.</p>;
   const criteria = rubric.criteria;
