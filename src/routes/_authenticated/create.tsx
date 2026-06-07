@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 import { getWebhookUrl } from "@/lib/webhook";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mic, MicOff } from "lucide-react";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/create")({ component: Create });
 
