@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 import { getWebhookUrl } from "@/lib/webhook";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mic, MicOff } from "lucide-react";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/create")({ component: Create });
 
@@ -51,6 +53,68 @@ export function LessonKitForm() {
   const [uploading, setUploading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
   const [result, setResult] = useState<any | null>(null);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const parseVoiceInput = (transcript: string) => {
+    const t = transcript.toLowerCase();
+    const updates: Record<string, any> = {};
+
+    const subjectMatch = SUBJECTS.find((s) => t.includes(s.toLowerCase()));
+    if (subjectMatch) { updates.subject = subjectMatch; setSubjectChoice(subjectMatch); }
+
+    const semMatch = t.match(/semester\s*(\d+)/);
+    if (semMatch) {
+      const n = parseInt(semMatch[1], 10);
+      if (n >= 1 && n <= 8) updates.grade = `Semester ${n}`;
+    }
+
+    const durMatch = t.match(/(30|45|60)\s*(minutes?|min)/);
+    if (durMatch) updates.duration = `${durMatch[1]} min` as any;
+
+    if (/\bhindi\b/.test(t)) updates.language = "Hindi";
+    else if (/\benglish\b/.test(t)) updates.language = "English";
+
+    if (/\badvanced\b/.test(t)) updates.difficulty = "Advanced";
+    else if (/\bintermediate\b/.test(t)) updates.difficulty = "Intermediate";
+    else if (/\bbeginner\b/.test(t)) updates.difficulty = "Beginner";
+
+    const topicMatch = transcript.match(/topic(?:\s+is)?\s+([^.,;]+?)(?:[.,;]|\s+(?:for|in|with|duration|objective|semester|grade|language|difficulty)\b|$)/i);
+    if (topicMatch) updates.topic = topicMatch[1].trim();
+
+    const objMatch = transcript.match(/objectives?(?:\s+(?:is|are))?\s+(.+?)(?:[.;]|$)/i);
+    if (objMatch) updates.objectives = objMatch[1].trim();
+
+    if (Object.keys(updates).length === 0 && !form.topic) {
+      updates.topic = transcript.trim();
+    }
+
+    setForm((p) => ({ ...p, ...updates }));
+    toast.success(`Filled ${Object.keys(updates).length} field(s) from voice`);
+  };
+
+  const startListening = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast.error("Voice recognition not supported in this browser"); return; }
+    const rec = new SR();
+    rec.lang = "en-US";
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.onresult = (e: any) => {
+      const transcript = Array.from(e.results).map((r: any) => r[0].transcript).join(" ");
+      parseVoiceInput(transcript);
+    };
+    rec.onerror = (e: any) => { toast.error(`Voice error: ${e.error}`); setListening(false); };
+    rec.onend = () => setListening(false);
+    recognitionRef.current = rec;
+    setListening(true);
+    rec.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setListening(false);
+  };
 
   const sanitizeText = (text: string) =>
     text
@@ -195,7 +259,25 @@ export function LessonKitForm() {
         </div>
 
         <Field label="Topic">
-          <Input value={form.topic} onChange={(e) => set("topic", e.target.value)} placeholder="e.g. Photosynthesis" />
+          <div className="flex gap-2">
+            <Input value={form.topic} onChange={(e) => set("topic", e.target.value)} placeholder="e.g. Photosynthesis" />
+            <Button
+              type="button"
+              variant={listening ? "destructive" : "outline"}
+              size="icon"
+              onClick={listening ? stopListening : startListening}
+              title={listening ? "Stop recording" : "Voice fill"}
+              className={listening ? "animate-pulse" : ""}
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+          </div>
+          {listening && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse" />
+              Listening… try: "Subject Mathematics, Semester 3, topic is Algebra, 45 minutes, English, beginner"
+            </p>
+          )}
         </Field>
 
         <div className="grid sm:grid-cols-3 gap-4">
