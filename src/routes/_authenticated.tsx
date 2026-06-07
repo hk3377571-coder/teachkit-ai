@@ -1,19 +1,19 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { AppSidebar } from "@/components/AppSidebar";
-
-export const Route = createFileRoute("/_authenticated")({ component: Layout });
+import { AIAssistant } from "@/components/AIAssistant";
 
 function Layout() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [loading, user, navigate]);
 
   if (loading || !user) {
-    return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading…</div>;
+    return <div className="min-h-screen grid place-items-center">Loading...</div>;
   }
 
   return (
@@ -22,6 +22,9 @@ function Layout() {
       <main className="flex-1 min-w-0">
         <Outlet />
       </main>
+      <AIAssistant />
     </div>
   );
 }
+
+export const Route = { component: Layout };
