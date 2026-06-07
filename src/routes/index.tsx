@@ -23,8 +23,7 @@ function Landing() {
             <span className="font-semibold tracking-tight">AI Teaching Studio</span>
           </Link>
           <nav className="flex items-center gap-2">
-            <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
-            <Button asChild><Link to="/signup">Start free</Link></Button>
+            <Button asChild><Link to="/dashboard">Open Studio <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
           </nav>
         </div>
       </header>
@@ -42,10 +41,10 @@ function Landing() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-3">
             <Button size="lg" asChild>
-              <Link to="/signup">Start Creating <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <Link to="/dashboard">Start Creating <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link to="/login">I already have an account</Link>
+              <Link to="/lessons">Browse Lessons</Link>
             </Button>
           </div>
         </section>

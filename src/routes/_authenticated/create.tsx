@@ -66,13 +66,12 @@ export function LessonKitForm() {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
-    if (!user) return;
     setLoading(true);
     setResponse(null);
     setResult(null);
 
     let pdfUrl: string | null = null;
-    if (pdfFile) {
+    if (pdfFile && user) {
       setUploading(true);
       const path = `${user.id}/${Date.now()}-${pdfFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const { error: upErr } = await supabase.storage
@@ -85,13 +84,15 @@ export function LessonKitForm() {
       }
       // Bucket is private; store the object path. Generate signed URLs on read.
       pdfUrl = path;
+    } else if (pdfFile && !user) {
+      toast.message("PDF uploads require sign in — continuing without attachment.");
     }
 
     const safeTopic = sanitizeText(parsed.data.topic);
     const safeObjectives = sanitizeText(parsed.data.objectives);
 
     const { data: lesson, error } = await supabase.from("lessons").insert({
-      user_id: user.id,
+      user_id: user?.id ?? null,
       subject: parsed.data.subject,
       grade: parsed.data.grade,
       topic: safeTopic,
