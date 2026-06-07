@@ -58,7 +58,7 @@ export function LessonKitForm() {
 
   const parseVoiceInput = (transcript: string) => {
     const t = transcript.toLowerCase();
-    const updates: Partial<typeof form> = {};
+    const updates: Record<string, any> = {};
 
     const subjectMatch = SUBJECTS.find((s) => t.includes(s.toLowerCase()));
     if (subjectMatch) { updates.subject = subjectMatch; setSubjectChoice(subjectMatch); }
