@@ -83,7 +83,8 @@ export function LessonKitForm() {
         setLoading(false);
         return toast.error(`PDF upload failed: ${upErr.message}`);
       }
-      pdfUrl = supabase.storage.from("lesson-pdfs").getPublicUrl(path).data.publicUrl;
+      // Bucket is private; store the object path. Generate signed URLs on read.
+      pdfUrl = path;
     }
 
     const safeTopic = sanitizeText(parsed.data.topic);
