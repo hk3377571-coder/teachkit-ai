@@ -60,7 +60,7 @@ export type Database = {
           subject: string
           topic: string
           updated_at: string
-          user_id: string
+          user_id: string | null
           worksheet: Json | null
         }
         Insert: {
@@ -79,7 +79,7 @@ export type Database = {
           subject: string
           topic: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           worksheet?: Json | null
         }
         Update: {
@@ -98,7 +98,7 @@ export type Database = {
           subject?: string
           topic?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           worksheet?: Json | null
         }
         Relationships: []
