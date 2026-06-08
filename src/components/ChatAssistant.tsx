@@ -149,7 +149,7 @@ export function ChatAssistant() {
                 className={cn(
                   "max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed",
                   m.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground rounded-br-sm"
+                    ? "ml-auto bg-gradient-cta text-white rounded-br-sm shadow-glow"
                     : "mr-auto bg-muted text-foreground rounded-bl-sm",
                 )}
               >
