@@ -68,9 +68,12 @@ function LessonsIndex() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filtered.map((l) => (
-              <div key={l.id} className="rounded-xl border border-border bg-card p-5 flex flex-col group hover:shadow-sm transition-shadow">
-                <div className="text-xs text-muted-foreground">{l.subject} · {l.grade}</div>
-                <div className="font-semibold mt-1 line-clamp-2">{l.topic}</div>
+              <div key={l.id} className="rounded-xl border border-border bg-card p-5 flex flex-col group transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover hover:border-primary/30">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="subject-badge" data-subject={l.subject}>{l.subject}</span>
+                  <span className="text-[11px] text-muted-foreground">{l.grade}</span>
+                </div>
+                <div className="font-semibold mt-3 line-clamp-2">{l.topic}</div>
                 <div className="text-xs text-muted-foreground mt-2">{new Date(l.created_at).toLocaleDateString()}</div>
                 <div className="flex gap-2 mt-4">
                   <Button size="sm" variant="outline" asChild className="flex-1">
