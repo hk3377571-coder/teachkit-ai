@@ -106,9 +106,9 @@ export function ChatAssistant() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Close assistant" : "Open assistant"}
         className={cn(
-          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
-          "bg-primary text-primary-foreground hover:scale-105 active:scale-95",
-          "transition-transform grid place-items-center",
+          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full",
+          "bg-gradient-cta text-white shadow-glow-strong hover:scale-110 active:scale-95",
+          "transition-all duration-300 grid place-items-center",
         )}
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
@@ -118,23 +118,24 @@ export function ChatAssistant() {
         <div
           className={cn(
             "fixed bottom-24 right-6 z-50 w-[min(92vw,380px)] h-[min(70vh,560px)]",
-            "rounded-2xl border bg-background shadow-2xl flex flex-col overflow-hidden",
+            "rounded-2xl border bg-background shadow-glow-strong flex flex-col overflow-hidden",
             "animate-in fade-in slide-in-from-bottom-4",
           )}
         >
-          <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/40">
-            <div className="h-8 w-8 rounded-full bg-primary/10 grid place-items-center">
-              <Sparkles className="h-4 w-4 text-primary" />
+          <div className="relative flex items-center gap-2.5 px-4 py-3 bg-gradient-chat text-white overflow-hidden">
+            <div className="absolute inset-0 bg-dots-pattern opacity-25" />
+            <div className="relative h-9 w-9 rounded-full bg-white/20 backdrop-blur grid place-items-center">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="relative min-w-0 flex-1">
               <div className="text-sm font-semibold leading-tight">Teaching Assistant</div>
-              <div className="text-xs text-muted-foreground">Powered by Llama 3.3</div>
+              <div className="text-xs text-white/75">Powered by Llama 3.3</div>
             </div>
             {listening && (
-              <div className="flex items-center gap-1.5 text-xs text-red-500 font-medium">
+              <div className="relative flex items-center gap-1.5 text-xs text-white font-medium">
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-400" />
                 </span>
                 Listening
               </div>
@@ -192,7 +193,7 @@ export function ChatAssistant() {
             >
               {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </Button>
-            <Button type="submit" size="icon" disabled={loading || !input.trim()}>
+            <Button type="submit" size="icon" disabled={loading || !input.trim()} className="btn-gradient border-0">
               <Send className="h-4 w-4" />
             </Button>
           </form>
