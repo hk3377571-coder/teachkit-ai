@@ -227,8 +227,20 @@ export function LessonKitForm() {
 
   return (
     <div>
-      <PageHeader title="Create Lesson" subtitle="Fill the details — we'll generate a complete kit." />
-      <form onSubmit={onSubmit} className="max-w-2xl mx-auto p-8 space-y-6">
+      <div className="relative overflow-hidden bg-gradient-hero text-white">
+        <div className="absolute inset-0 bg-dots-pattern opacity-30" />
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="relative max-w-3xl mx-auto px-8 py-12">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-xs font-medium">
+            <Sparkles className="h-3.5 w-3.5" /> AI Lesson Studio
+          </div>
+          <h1 className="font-display text-4xl md:text-5xl mt-4 leading-tight">Craft your next lesson in seconds</h1>
+          <p className="mt-3 text-white/80 max-w-xl">Tell us the subject, topic and style — we'll generate a complete kit with plan, worksheet, quiz and answer key.</p>
+        </div>
+      </div>
+      <form onSubmit={onSubmit} className="max-w-2xl mx-auto p-8 space-y-6 -mt-6 relative">
+        <div className="rounded-2xl border border-border bg-card shadow-card-hover p-6 space-y-6">
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Subject">
             <Select
@@ -350,7 +362,7 @@ export function LessonKitForm() {
           )}
         </Field>
 
-        <Button type="submit" disabled={loading} className="w-full" size="lg">
+        <Button type="submit" disabled={loading} className="w-full btn-gradient border-0" size="lg">
           {uploading ? (
             <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading PDF…</>
           ) : loading ? (
@@ -375,6 +387,7 @@ export function LessonKitForm() {
             <ResultCard title="Answer Key" data={result.answer_key} />
           </div>
         )}
+        </div>
       </form>
     </div>
   );
