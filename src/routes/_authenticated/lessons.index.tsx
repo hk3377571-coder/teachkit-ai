@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, ExternalLink, Search, PlusCircle, Library } from "lucide-react";
+import { Trash2, ExternalLink, Search, PlusCircle, Library, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/lessons/")({ component: LessonsIndex });
@@ -34,6 +34,16 @@ function LessonsIndex() {
     if (error) return toast.error(error.message);
     toast.success("Lesson deleted");
     load();
+  };
+
+  const share = async (id: string) => {
+    const url = `${window.location.origin}/lesson/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Public link copied", { description: url });
+    } catch {
+      toast.info(url);
+    }
   };
 
   return (
@@ -79,6 +89,7 @@ function LessonsIndex() {
                   <Button size="sm" variant="outline" asChild className="flex-1">
                     <Link to="/lessons/$id" params={{ id: l.id }}><ExternalLink className="h-3.5 w-3.5 mr-1" /> Open</Link>
                   </Button>
+                  <Button size="sm" variant="ghost" onClick={() => share(l.id)} title="Share public link"><Share2 className="h-3.5 w-3.5" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => del(l.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
