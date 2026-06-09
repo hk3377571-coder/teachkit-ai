@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { AIAssistant } from "@/components/AIAssistant";
 import { AppSidebar } from "@/components/AppSidebar";
 
 function Layout() {
@@ -9,7 +8,6 @@ function Layout() {
       <main className="flex-1 min-w-0">
         <Outlet />
       </main>
-      <AIAssistant />
     </div>
   );
 }
