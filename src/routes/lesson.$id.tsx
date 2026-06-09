@@ -251,8 +251,8 @@ function WorksheetView({ ws }: { ws: any }) {
 }
 
 function QuizTaker({ questions, studentName, setStudentName, answers, setAnswers, step, setStep, onSubmit, onCancel }: any) {
+  const [name, setName] = useState("");
   if (!studentName) {
-    const [name, setName] = useState("");
     return (
       <div className="rounded-2xl border border-border bg-card p-8 max-w-lg mx-auto shadow-card-hover">
         <h2 className="text-2xl font-bold mb-2">Ready to start?</h2>
